@@ -12,14 +12,14 @@ VXLAN="vxlan0"
 #VXLANIP="10.100.100.$(( ( RANDOM % 255 )  + 1 ))/24"   # random last byte
 TUNIP=""
 VXBRIDGE="vxbr0"
-SRCPORT="33100 33110"
+SRCPORT="$RPORT `expr $RPORT + 1`"
 
 USAGE="Usage: `basename $0` [-m mcaddr | -r hostaddr | -p port |-h] tunnel-device [bridge-device]\n
   -h                Help message\n
   -m mcaddr         Multicast address (default $MCADDR)\n
   -r hostadd        Host address of remote tunnel endpoint (if not set, use mcaddr)\n
   -p port           Port of remote tunnel endpoint, i.e. destinasion port (default $RPORT)\n
-  -P \"min max\"    Min and max port in source port range\n
+  -P \"min max\"    Min and max port in source port range (default \"$SRCPORT\")\n
   -i ip address     IP address of tunnel inside (default dhcp)\n
   -d                Delete tunnel\n
   -q		    Be quiet, don't output info messages\n
@@ -128,7 +128,7 @@ case $ACTION in
                 # Turn off iptables for bridges
                 sysctl net.bridge.bridge-nf-call-iptables=0
  
-		TUNIPDEV=$BDEV # Set IP of bride instead
+		TUNIPDEV=$VXBRIDGE # Set IP of bride instead
 	    fi
 	    if [ "$TUNIP" ]
 	    then
@@ -139,7 +139,7 @@ case $ACTION in
 	    else
 		# Set IP with DHCP
 		msg "Setting IP address on device $TUNIPDEV with DHCP..."
-		dhclient $TUNIPDEV
+		timeout 10 dhclient -1 -d $TUNIPDEV
 	    fi
 	fi
 	;;
