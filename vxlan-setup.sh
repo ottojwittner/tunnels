@@ -132,14 +132,18 @@ case $ACTION in
 	    fi
 	    if [ "$TUNIP" ]
 	    then
-		# Set static IP for tunnel inside device
-		msg "Setting IP address $TUNIP one device $TUNIPDEV..."
-#		ip addr add $TUNIP dev $TUNIPDEV
-		ifconfig $TUNIPDEV $TUNIP 
-	    else
-		# Set IP with DHCP
-		msg "Setting IP address on device $TUNIPDEV with DHCP..."
-		timeout 10 dhclient -1 -d $TUNIPDEV
+		# Set IP for the "inside" of the tunnel (or bridge)
+		if [ "$TUNIP" = "dhcp" ]
+		then
+		    # Set IP with DHCP
+		    msg "Setting IP address on device $TUNIPDEV with DHCP..."
+		    timeout 10 dhclient -1 -d $TUNIPDEV
+		else
+		    # Assume static IP. Setup.
+		    msg "Setting IP address $TUNIP one device $TUNIPDEV..."
+		    #		ip addr add $TUNIP dev $TUNIPDEV
+		    ifconfig $TUNIPDEV $TUNIP 
+		fi
 	    fi
 	fi
 	;;
